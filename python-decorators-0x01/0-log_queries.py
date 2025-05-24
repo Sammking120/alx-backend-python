@@ -2,7 +2,7 @@
 import sqlite3
 import functools
 import logging
-import datetime
+from datetime import datetime
 
 # Set up logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
