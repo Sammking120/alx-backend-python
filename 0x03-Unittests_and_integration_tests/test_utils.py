@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Unit tests for TestClass and its properties and methods."""
 import unittest
 from parameterized import parameterized
 from unittest.mock import patch, Mock
