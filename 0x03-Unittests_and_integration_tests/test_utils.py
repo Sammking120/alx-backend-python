@@ -20,7 +20,7 @@ class TestAccessNestedMap(unittest.TestCase):
 
     @parameterized.expand([
         ({}, ("a",), "a"),  # Empty dict, missing key
-        ({"a": 1}, ("a", "b"), "b"),  # Non-mapping value, invalid path
+        ({"a": 1}, ("a", "b"), "b"),  # Non-mapping value
     ])
     def test_access_nested_map_exception(self, nested_map, path, expected_key):
         """Test access_nested_map raises KeyError for invalid paths."""
@@ -34,7 +34,7 @@ class TestGetJson(unittest.TestCase):
 
     @parameterized.expand([
         ("http://example.com", {"payload": True}),
-        ("http://holberton.io", {"payload": False}),  # Mocked URL, false payload
+        ("http://holberton.io", {"payload": False}),  # Mocked URL
     ])
     @patch('utils.requests.get')
     def test_get_json(self, test_url, test_payload, mock_get):
