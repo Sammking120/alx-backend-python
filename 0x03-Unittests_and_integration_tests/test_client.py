@@ -3,8 +3,9 @@
 
 import unittest
 from unittest.mock import patch, Mock, PropertyMock
-from parameterized import parameterized
+from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -62,3 +63,41 @@ class TestGithubOrgClient(unittest.TestCase):
         """Test GithubOrgClient.has_license returns correct boolean."""
         result = GithubOrgClient.has_license(repo, license_key)  # Call method
         self.assertEqual(result, expected)  # Verify result
+
+@parameterized_class([
+    {
+        "org_payload": TEST_PAYLOAD[0][0],
+        "repos_payload": TEST_PAYLOAD[0][1],
+        "expected_repos": TEST_PAYLOAD[0][2],
+        "apache2_repos": TEST_PAYLOAD[0][3]
+    }
+])
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Assign parameterized attributes to the class
+        cls.org_payload = cls.org_payload
+        cls.repos_payload = cls.repos_payload
+        cls.expected_repos = cls.expected_repos
+        cls.apache2_repos = cls.apache2_repos
+
+        def get_side_effect(url):
+            mock = Mock()
+            if url == "https://api.github.com/orgs/google/repos":
+                mock.json.return_value = cls.repos_payload
+            elif url == "https://api.github.com/orgs/google":
+                mock.json.return_value = cls.org_payload
+            else:
+                raise ValueError(f"Unexpected URL: {url}")
+            return mock
+        cls.get_patcher = patch('utils.requests.get', side_effect=get_side_effect)
+        cls.get_patcher.start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.get_patcher.stop()
+
+    def test_public_repos(self):
+        client = GithubOrgClient("google")
+        self.assertEqual(client.public_repos(), self.expected_repos)
+        self.assertEqual(client.public_repos(license="apache-2.0"), self.apache2_repos)
