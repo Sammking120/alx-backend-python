@@ -90,7 +90,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             else:
                 raise ValueError(f"Unexpected URL: {url}")
             return mock
-        cls.get_patcher = patch('requests.get')
+        cls.get_patcher = patch('client.requests.get')
         cls.get_patcher.start()
 
     @classmethod
@@ -100,4 +100,8 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     def test_public_repos(self):
         client = GithubOrgClient("google")
         self.assertEqual(client.public_repos(), self.expected_repos)
+        self.assertEqual(client.public_repos(license="apache-2.0"), self.apache2_repos)
+        
+    def test_public_repos_with_license(self):
+        client = GithubOrgClient("google")
         self.assertEqual(client.public_repos(license="apache-2.0"), self.apache2_repos)
