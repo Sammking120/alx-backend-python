@@ -90,7 +90,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             else:
                 raise ValueError(f"Unexpected URL: {url}")
             return mock
-        cls.get_patcher = patch('requests.get', side_effect=get_side_effect)
+        cls.get_patcher = patch('requests.get')
         cls.get_patcher.start()
 
     @classmethod
