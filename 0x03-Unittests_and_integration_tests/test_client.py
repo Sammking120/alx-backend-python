@@ -72,9 +72,7 @@ class TestGithubOrgClient(unittest.TestCase):
         "apache2_repos": TEST_PAYLOAD[0][3]
     }
 ])
-
 class TestIntegrationGithubOrgClient(unittest.TestCase):
-    """Integration tests for the GithubOrgClient class."""
     @classmethod
     def setUpClass(cls):
         # Assign parameterized attributes to the class
@@ -100,6 +98,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher.stop()
 
     def test_public_repos(self):
+        """Test the public_repos method of GithubOrgClient."""
         client = GithubOrgClient("google")
         self.assertEqual(client.public_repos(),
                          self.expected_repos)
@@ -107,7 +106,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
                          self.apache2_repos)
 
     def test_public_repos_with_license(self):
-        """Test the public_repos method of GithubOrgClient."""
+        """Test the public_repos_with_license method of GithubOrgClient."""
         client = GithubOrgClient("google")
         self.assertEqual(client.public_repos(license="apache-2.0"),
                          self.apache2_repos)
