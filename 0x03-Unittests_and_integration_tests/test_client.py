@@ -22,7 +22,7 @@ class TestGithubOrgClient(unittest.TestCase):
         client = GithubOrgClient(org_name)  # Create client instance
         result = client.org  # Call org property
         self.assertEqual(result, {"payload": True})  # Verify result
-        mock_get_json.assert_called_once_with( #corect the next line
+        mock_get_json.assert_called_once_with( # corect me next
             f"https: //api.github.com/orgs/{org_name}")
 
     def test_public_repos_url(self):
