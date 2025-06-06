@@ -73,7 +73,7 @@ class TestGithubOrgClient(unittest.TestCase):
     }
 ])
 class TestIntegrationGithubOrgClient(unittest.TestCase):
-    """Integration tests for the GithubOrgClient class."""
+    """Test the public_repos method of GithubOrgClient."""
     @classmethod
     def setUpClass(cls):
         # Assign parameterized attributes to the class
