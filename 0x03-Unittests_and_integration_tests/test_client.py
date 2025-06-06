@@ -23,7 +23,7 @@ class TestGithubOrgClient(unittest.TestCase):
         result = client.org  # Call org property
         self.assertEqual(result, {"payload": True})  # Verify result
         mock_get_json.assert_called_once_with(  # Check get_json call
-            f"https: //api.github.com/orgs/{org_name}"
+            f"https://api.github.com/orgs/{org_name}"
         )
 
     def test_public_repos_url(self):
@@ -90,7 +90,7 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
             else:
                 raise ValueError(f"Unexpected URL: {url}")
             return mock
-        cls.get_patcher = patch('requests.get')
+        cls.get_patcher = patch('requests.get', side_effect=get_side_effect)
         cls.get_patcher.start()
 
     @classmethod
