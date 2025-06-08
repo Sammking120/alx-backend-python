@@ -71,7 +71,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         if not conversation.participants.filter(pk=self.request.user.pk).exists():
             raise PermissionDenied(
                 detail="You do not have permission to send messages in this conversation.",
-                code="permission_denied"
+                code="HTTP_403_FORBIDDEN"
             )
         serializer.save(sender=self.request.user, conversation=conversation)
 
@@ -80,7 +80,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         if instance is None or instance.sender != self.request.user:
             raise PermissionDenied(
                 detail="You can only edit your own messages.",
-                code="permission_denied"
+                code="HTTP_403_FORBIDDEN"
             )
         serializer.save()
 
@@ -88,7 +88,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         if instance.sender != self.request.user:
             raise PermissionDenied(
                 detail="You can only delete your own messages.",
-                code="permission_denied"
+                code="HTTP_403_FORBIDDEN"
             )
         instance.delete()
 
