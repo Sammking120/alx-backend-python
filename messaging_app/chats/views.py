@@ -14,6 +14,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     search_fields = ['message_body']
 
     
+    
 
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()

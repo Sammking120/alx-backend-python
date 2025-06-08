@@ -33,6 +33,7 @@ class Conversation (models.Model):
 class Message(models.Model):
     '''model representing a message in the messaging app.'''
     sender = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='sent_messages')
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")
     message_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     sent_at = models.DateTimeField(auto_now_add=True)
     message_body = models.TextField()
