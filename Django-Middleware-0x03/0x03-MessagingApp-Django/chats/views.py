@@ -8,6 +8,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
+from django.shortcuts import redirect
+
+def home_redirect(request):
+    return redirect('/api/')
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer

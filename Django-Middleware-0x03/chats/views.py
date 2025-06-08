@@ -8,6 +8,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
+from django.http import HttpResponse
+
+def home_view(request):
+    return HttpResponse("Welcome to the Chat API!")
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
