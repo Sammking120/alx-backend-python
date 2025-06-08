@@ -1,36 +1,63 @@
 from rest_framework import serializers
-from .models import Users, Message, Conversation
+from .models import User, Conversation, Message
 
-class UsersSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(max_length=255, required=False)
-    last_name = serializers.CharField(max_length=255, required=False)
+class UserSerializer(serializers.ModelSerializer):
+    display_name = serializers.CharField(source='get_full_name', read_only=True)
 
     class Meta:
-        model = Users
-        fields = ['name_of_user','Email_of_user','password','is_online']
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'password']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        """Create a new User instance with a hashed password."""
+        user = User(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            phone_number=validated_data.get('phone_number', '')
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+    def validate_email(self, value):
+        if "spam" in value:
+            raise serializers.ValidationError("Invalid email address.")
+        return value
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = UsersSerializer(read_only=True)
-    message_id = serializers.UUIDField(read_only=True)
-    message_body = serializers.CharField(max_length=500)
-    timestamp = serializers.DateTimeField(read_only=True)
-    message_preview = serializers.SerializerMethodField()
+    sender = serializers.PrimaryKeyRelatedField(read_only=True)
+    conversation = serializers.PrimaryKeyRelatedField(read_only=True)
+    message_body = serializers.CharField(required=True)
 
     class Meta:
         model = Message
-        fields = ['sender', 'message_id', 'message_body', 'timestamp', 'message_preview']
+        fields = ['message_id', 'sender', 'conversation', 'message_body', 'sent_at']
+        read_only_fields = ['message_id', 'sender', 'conversation', 'sent_at']
 
-def validate_message(self , value):
-    if not value.stip():
-     raise serializers.ValidationError('message body cannot be empty')
-    return value
-        
+    def create(self, validated_data):
+        """Create a new message."""
+        return Message.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        """Customize the message representation."""
+        data = super().to_representation(instance)
+        data['sender_name'] = instance.sender.get_full_name()
+        return data
 
 class ConversationSerializer(serializers.ModelSerializer):
-    participants = UsersSerializer(many=True, read_only=True)
-    messages = MessageSerializer(many=True, read_only=True, source='messages')
+    participants = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    messages = MessageSerializer(many=True, read_only=True)
+    message_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = Message
-        fields = ['sender','conversation','text','timestamp','is_read','is_deleted']
+        model = Conversation
+        fields = ['conversation_id', 'participants',
+                  'created_at', 'messages', 'message_count']
+        read_only_fields = ['created_at']
+
+    def get_message_count(self, obj):
+        return obj.messages.count()
