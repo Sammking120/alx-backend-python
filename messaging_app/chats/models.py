@@ -23,15 +23,16 @@ class Users(AbstractUser):
 class Conversation (models.Model):
     '''model representing a conversation in the messaging app.'''
     conversation_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    participant = models.ManyToManyField(Users, related_name='participants')
+    participants = models.ManyToManyField(Users, related_name='participants')
 
 
     def __str__(self):
-        return f"Conversation between {self.participant.all()} with ID {self.conversation_id}"
+        return f"Conversation between {self.participants.all()} with ID {self.conversation_id}"
 
 
 class Message(models.Model):
     '''model representing a message in the messaging app.'''
+    sender = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='sent_messages')
     message_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     sent_at = models.DateTimeField(auto_now_add=True)
     message_body = models.TextField()
