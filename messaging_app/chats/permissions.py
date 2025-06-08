@@ -27,22 +27,15 @@ class IsConversationParticipant(BasePermission):
 class IsParticipantOfConversation(BasePermission):
     """
     Allows access only to authenticated users who are participants in the conversation.
-    For Message objects, checks the associated conversation's participants.
-    For Conversation objects, checks the participants directly.
+    Applies to sending, viewing, updating, and deleting messages.
     """
     def has_permission(self, request: Request, view: View) -> Literal[True]:
         if not request.user.is_authenticated:
             raise PermissionDenied("Authentication required.")
         return True
 
-    def has_object_permission(self, request: Request, view: View, obj: Conversation | Message) -> Literal[True]:
-        # Handle Message objects
-        if isinstance(obj, Message):
-            conversation = obj.conversation
-        # Handle Conversation objects
-        else:
-            conversation = obj
-        
-        if not conversation.participants.filter(pk=request.user.pk).exists():
+    def has_object_permission(self, request: Request, view: View, obj: Message) -> Literal[True]:
+        # Check if the user is a participant in the message's conversation
+        if not obj.conversation.participants.filter(pk=request.user.pk).exists():
             raise PermissionDenied("You are not a participant in this conversation.")
         return True
