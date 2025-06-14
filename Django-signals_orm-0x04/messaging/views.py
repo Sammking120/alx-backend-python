@@ -16,14 +16,15 @@ class ReplyForm(forms.ModelForm):
 
 @login_required
 def message_list(request):
-    # Optimize queries with select_related and prefetch_related
     sent_messages = Message.objects.filter(sender=request.user, parent_message__isnull=True)\
         .select_related('receiver').prefetch_related('replies')
     received_messages = Message.objects.filter(receiver=request.user, parent_message__isnull=True)\
         .select_related('sender').prefetch_related('replies')
+    unread_messages = Message.unread.unread_for_user(request.user)
     return render(request, 'messaging/message_list.html', {
         'sent_messages': sent_messages,
         'received_messages': received_messages,
+        'unread_messages': unread_messages,
         'reply_form': ReplyForm()
     })
 
@@ -34,6 +35,9 @@ def message_history(request, message_id):
         return render(request, 'messaging/error.html', {'error': 'You are not authorized to view this message.'}, status=403)
     history = MessageHistory.objects.filter(message=message).select_related('edited_by')
     threaded_replies = message.get_threaded_replies().select_related('sender', 'receiver', 'parent_message')
+    if not message.is_read and request.user == message.receiver:
+        message.is_read = True
+        message.save()
     return render(request, 'messaging/message_history.html', {
         'message': message,
         'history': history,
