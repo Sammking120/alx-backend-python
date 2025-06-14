@@ -1,7 +1,7 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
-from .models import Message, Notification, MessageHistory
+from .models import Message, Notification, MessageHistory, DeletionLog
 
 @receiver(post_save, sender=Message)
 def create_message_notification(sender, instance, created, **kwargs):
@@ -25,3 +25,11 @@ def log_message_edit(sender, instance, **kwargs):
                 instance.edited = True  # Mark message as edited
         except Message.DoesNotExist:
             pass  # Handle case where message doesn't exist yet
+        
+@receiver(post_delete, sender=User)
+def cleanup_user_data(sender, instance, **kwargs):
+    DeletionLog.objects.create(username=instance.username)
+    Message.objects.filter(sender=instance).delete()
+    Message.objects.filter(receiver=instance).delete()
+    Notification.objects.filter(user=instance).delete()
+    MessageHistory.objects.filter(edited_by=instance).delete()

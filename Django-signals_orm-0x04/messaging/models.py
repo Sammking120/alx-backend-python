@@ -37,3 +37,15 @@ class MessageHistory(models.Model):
 
     def __str__(self):
         return f"Edit history for message {self.message.id} at {self.edited_at}"
+
+class DeletionLog(models.Model):
+    username = models.CharField(max_length=150)
+    message = models.ForeignKey(Message, related_name='deletion_logs', on_delete=models.CASCADE)
+    deleted_at = models.DateTimeField(auto_now_add=True)
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ['-deleted_at']
+
+    def __str__(self):
+        return f"Deletion log for message {self.message.id} at {self.deleted_at}"
