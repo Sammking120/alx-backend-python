@@ -1,7 +1,12 @@
+from linecache import cache
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from .models import Message, Notification, MessageHistory, DeletionLog
+from django.urls import reverse
+from django.core.cache import cache
+from django.db import models
+
 
 @receiver(post_save, sender=Message)
 def create_message_notification(sender, instance, created, **kwargs):
@@ -10,6 +15,9 @@ def create_message_notification(sender, instance, created, **kwargs):
             user=instance.receiver,
             message=instance
         )
+        # Invalidate message_list cache for receiver
+        cache_key = f"views.decorators.cache.cache_page.{reverse('messaging:message_list')}.{instance.receiver.id}"
+        cache.delete(cache_key)
 
 @receiver(pre_save, sender=Message)
 def log_message_edit(sender, instance, **kwargs):

@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 from .models import Message, MessageHistory
 from django import forms
+from django.views.decorators.cache import cache_page
 
 class ReplyForm(forms.ModelForm):
     class Meta:
@@ -15,6 +16,7 @@ class ReplyForm(forms.ModelForm):
         }
 
 @login_required
+@cache_page(60)  # Cache for 60 seconds
 def message_list(request):
     sent_messages = Message.objects.filter(sender=request.user, parent_message__isnull=True)\
         .select_related('receiver').prefetch_related('replies')
