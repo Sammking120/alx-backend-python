@@ -7,12 +7,43 @@ class Message(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    edited = models.BooleanField(default=False)
+    parent_message = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        related_name='replies',
+        on_delete=models.CASCADE,
+        help_text="The message this is a reply to, if any."
+    )
+    parent_message = models.ForeignKey(
+    'self',
+    null=True,
+    blank=True,
+    on_delete=models.CASCADE,
+    related_name='replies'
+)
 
     class Meta:
-        ordering = ['-timestamp']
+        ordering = ['timestamp']
 
     def __str__(self):
         return f"Message from {self.sender} to {self.receiver} at {self.timestamp}"
+
+    def get_threaded_replies(self):
+        """
+        Recursively fetch all replies to this message, including nested replies.
+        Returns a queryset with replies ordered by timestamp.
+        """
+        def collect_replies(message, replies_set):
+            direct_replies = message.replies.all()
+            for reply in direct_replies:
+                replies_set.add(reply)
+                collect_replies(reply, replies_set)
+
+        replies_set = set()
+        collect_replies(self, replies_set)
+        return Message.objects.filter(id__in=[reply.id for reply in replies_set]).order_by('timestamp')
 
 class Notification(models.Model):
     user = models.ForeignKey(User, related_name='notifications', on_delete=models.CASCADE)
@@ -40,12 +71,7 @@ class MessageHistory(models.Model):
 
 class DeletionLog(models.Model):
     username = models.CharField(max_length=150)
-    message = models.ForeignKey(Message, related_name='deletion_logs', on_delete=models.CASCADE)
     deleted_at = models.DateTimeField(auto_now_add=True)
-    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-
-    class Meta:
-        ordering = ['-deleted_at']
 
     def __str__(self):
-        return f"Deletion log for message {self.message.id} at {self.deleted_at}"
+        return f"User {self.username} deleted at {self.deleted_at}"
