@@ -20,7 +20,9 @@ def message_list(request):
         .select_related('receiver').prefetch_related('replies')
     received_messages = Message.objects.filter(receiver=request.user, parent_message__isnull=True)\
         .select_related('sender').prefetch_related('replies')
-    unread_messages = Message.unread.unread_for_user(request.user)
+    unread_messages = Message.unread.unread_for_user(request.user).only(
+        'id', 'sender', 'receiver', 'content', 'timestamp', 'is_read'
+    )
     return render(request, 'messaging/message_list.html', {
         'sent_messages': sent_messages,
         'received_messages': received_messages,
