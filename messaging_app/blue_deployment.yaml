@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
         - name: django-blue
-          image: django-messaging:blue  # Use your blue version image
+          image: django-messaging:2.0 # Use your blue version image
           ports:
             - containerPort: 8000

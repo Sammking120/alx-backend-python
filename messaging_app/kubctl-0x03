@@ -1,0 +1,30 @@
+#!/bin/bash
+
+DEPLOYMENT="django-blue"
+SERVICE="django-service"
+NAMESPACE="default"
+PORT=8000
+
+echo "🚀 Triggering rolling update with new image..."
+kubectl apply -f blue_deployment.yaml
+
+echo "🔄 Watching rollout status..."
+kubectl rollout status deployment/$DEPLOYMENT --namespace=$NAMESPACE &
+
+# Background rollout monitoring
+ROLL_PID=$!
+
+# Start curl testing in parallel
+echo "📡 Sending test traffic using curl..."
+for i in {1..20}; do
+  curl -s http://localhost:$PORT/ > /dev/null && echo "✅ Request $i successful" || echo "❌ Request $i failed"
+  sleep 1
+done
+
+# Wait for rollout to finish
+wait $ROLL_PID
+
+echo "🔍 Checking running pods..."
+kubectl get pods -l app=django -n $NAMESPACE
+
+echo "✅ Rolling update complete."
