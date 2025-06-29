@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: django-container
-          image: sammking/django-messaging:latest
+          image: django-messaging:latest
           ports:
             - containerPort: 8000
           env:
