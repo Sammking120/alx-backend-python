@@ -17,8 +17,9 @@ services:
   web:
     build:
       context: .
+      dockerfile: Dockerfile
       network: host # Use host network for local development
-    command: sh -c "python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
+    command: sh -c "sleep 10 && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
