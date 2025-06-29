@@ -1,0 +1,3 @@
+kubectl get ingress
+kubectl describe ingress django-ingress
+kubectl apply -f ingress.yaml
