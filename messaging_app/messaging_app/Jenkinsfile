@@ -1,0 +1,54 @@
+pipeline {
+    agent {
+        docker {
+            image 'python:3.9'
+            args '-u root'
+        }
+    }
+    
+    environment {
+        GITHUB_CREDENTIALS = credentials('github-credentials-id')
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github-credentials-id',
+                    url: 'https://github.com/sammking120/alx-backend-python/messaging_app.git'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                sh 'pip install pytest pytest-html'
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                sh 'pytest --junitxml=test-report.xml --html=report.html --self-contained-html'
+            }
+        }
+        
+        stage('Archive Reports') {
+            steps {
+                archiveArtifacts artifacts: 'test-report.xml,report.html', allowEmptyArchive: true
+            }
+        }
+    }
+    
+    post {
+        always {
+            junit 'test-report.xml'
+            publishHTML(target: [
+                allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: '.',
+                reportFiles: 'report.html',
+                reportName: 'Test Report'
+            ])
+        }
+    }
+}
